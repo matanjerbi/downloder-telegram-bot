@@ -2,6 +2,7 @@
 שירות לקבלת מידע על סרטונים
 """
 
+import os
 import logging
 from typing import Dict, List, Any, Optional
 
@@ -10,6 +11,9 @@ import yt_dlp
 from config import COOKIES_FILE, MAX_QUALITIES
 
 logger = logging.getLogger(__name__)
+
+# Proxy אופציונלי (נדרש ל-YouTube ב-Render)
+PROXY_URL = os.getenv('PROXY_URL')
 
 
 class PrivateContentError(Exception):
@@ -39,6 +43,14 @@ def get_video_info(url: str) -> Optional[Dict[str, Any]]:
     # הוספת cookies אם קיים
     if COOKIES_FILE.exists():
         ydl_opts['cookiefile'] = str(COOKIES_FILE)
+        logger.info(f"[video_info] משתמש ב-cookies: {COOKIES_FILE}")
+    else:
+        logger.warning(f"[video_info] קובץ cookies לא נמצא: {COOKIES_FILE}")
+
+    # הוספת proxy אם מוגדר
+    if PROXY_URL:
+        ydl_opts['proxy'] = PROXY_URL
+        logger.info("[video_info] משתמש ב-proxy")
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:

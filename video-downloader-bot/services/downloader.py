@@ -14,6 +14,9 @@ from config import DOWNLOADS_DIR, COOKIES_FILE
 
 logger = logging.getLogger(__name__)
 
+# Proxy אופציונלי (נדרש ל-YouTube ב-Render)
+PROXY_URL = os.getenv('PROXY_URL')  # לדוגמה: socks5://user:pass@proxy.example.com:1080
+
 
 def download_video(url: str, quality: str = 'best', audio_only: bool = False) -> Optional[str]:
     """
@@ -40,6 +43,14 @@ def download_video(url: str, quality: str = 'best', audio_only: bool = False) ->
     # הוספת cookies אם קיים
     if COOKIES_FILE.exists():
         ydl_opts['cookiefile'] = str(COOKIES_FILE)
+        logger.info(f"משתמש ב-cookies: {COOKIES_FILE}")
+    else:
+        logger.warning(f"קובץ cookies לא נמצא: {COOKIES_FILE}")
+
+    # הוספת proxy אם מוגדר (נדרש ל-YouTube ב-Render)
+    if PROXY_URL:
+        ydl_opts['proxy'] = PROXY_URL
+        logger.info("משתמש ב-proxy")
 
     # הגדרת פורמט לפי סוג ההורדה
     if audio_only:

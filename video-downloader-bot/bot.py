@@ -28,14 +28,29 @@ def setup_cookies() -> bool:
 
     if cookies_base64:
         try:
+            logger.info(f"נמצא משתנה YOUTUBE_COOKIES_BASE64 (אורך: {len(cookies_base64)} תווים)")
+
             # המרה מbase64 לטקסט רגיל
             cookies_content = base64.b64decode(cookies_base64).decode('utf-8')
+
+            logger.info(f"תוכן ה-cookies (אורך: {len(cookies_content)} תווים)")
 
             # יצירת הקובץ בנתיב הנכון
             with open(COOKIES_FILE, 'w') as f:
                 f.write(cookies_content)
 
-            logger.info("YouTube Cookies נוצרו מהמשתנה סביבה (נדרש ל-Render)")
+            # בדיקה שהקובץ נוצר
+            if COOKIES_FILE.exists():
+                file_size = COOKIES_FILE.stat().st_size
+                logger.info(f"קובץ cookies נוצר: {COOKIES_FILE} (גודל: {file_size} bytes)")
+
+                # הצגת השורות הראשונות לבדיקה
+                with open(COOKIES_FILE, 'r') as f:
+                    first_lines = f.readlines()[:3]
+                    logger.info(f"תחילת הקובץ: {first_lines}")
+            else:
+                logger.error("הקובץ לא נוצר!")
+
             return True
 
         except Exception as e:
@@ -45,6 +60,11 @@ def setup_cookies() -> bool:
     else:
         # אין משתנה סביבה - זה OK! (מצב לוקאלי)
         logger.info("אין משתנה YOUTUBE_COOKIES_BASE64 - רץ במצב רגיל")
+
+        # בדיקה אם יש קובץ cookies קיים
+        if COOKIES_FILE.exists():
+            logger.info(f"נמצא קובץ cookies קיים: {COOKIES_FILE}")
+
         return False
 
 
