@@ -43,12 +43,15 @@ def main():
     # יצירת הבוט
     bot = create_bot()
 
+    # ניקוי webhook ישן (אם קיים) - מונע שגיאת 409
+    bot.remove_webhook()
+
     logger.info("הבוט מופעל...")
     logger.info(f"תיקיית הורדות: {DOWNLOADS_DIR}")
 
     # הפעלת הבוט
     try:
-        bot.infinity_polling(timeout=60, long_polling_timeout=60)
+        bot.infinity_polling(timeout=60, long_polling_timeout=60, allowed_updates=["message", "callback_query"])
     except Exception as e:
         logger.error(f"שגיאה בהפעלת הבוט: {e}")
         raise

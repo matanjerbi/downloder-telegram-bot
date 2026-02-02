@@ -16,7 +16,7 @@ from services import (
     PrivateContentError
 )
 from services.video_info import format_video_details
-from utils import cleanup_file, format_size, extract_url
+from utils import cleanup_file, format_size
 from utils.helpers import log_action
 from handlers.url import get_cache
 
@@ -25,27 +25,18 @@ logger = logging.getLogger(__name__)
 
 def _get_url_from_cache_key(cache_key: str) -> str:
     """
-    קבלת URL מהקאש או ישירות מהמפתח
-
-    אם הקאש ריק (למשל אחרי restart), ננסה להשתמש
-    במפתח עצמו כ-URL (עובד לקישורים קצרים מ-60 תווים)
+    קבלת URL מהקאש לפי מפתח
 
     Args:
-        cache_key: מפתח הקאש (יכול להיות URL מקוצר)
+        cache_key: מפתח הקאש (UUID קצר)
 
     Returns:
-        URL מלא או None אם לא תקין
+        URL מלא או None אם לא נמצא
     """
     video_cache = get_cache()
 
-    # אם יש בקאש - נשתמש בזה
     if cache_key in video_cache:
-        return video_cache[cache_key]['url']
-
-    # אם המפתח עצמו הוא URL תקין - נשתמש בו ונוסיף לקאש
-    if cache_key.startswith('http') and extract_url(cache_key):
-        video_cache[cache_key] = {'url': cache_key}
-        return cache_key
+        return video_cache[cache_key].get('url')
 
     return None
 
