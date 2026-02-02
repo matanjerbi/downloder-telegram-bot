@@ -5,14 +5,51 @@
 נקודת כניסה ראשית
 """
 
+import os
+import base64
+
 import telebot
 
-from config import BOT_TOKEN, DOWNLOADS_DIR
+from config import BOT_TOKEN, DOWNLOADS_DIR, COOKIES_FILE
 from utils.helpers import setup_logger, check_ffmpeg
 from handlers import register_all_handlers
 
 # הגדרת לוגר
 logger = setup_logger(__name__)
+
+
+# === Optional Cookie Setup ===
+def setup_cookies() -> bool:
+    """
+    יוצר קובץ cookies.txt מהמשתנה סביבה אם קיים.
+    אם לא קיים - הבוט ממשיך לעבוד בלי cookies (רלוונטי ל-Render בלבד)
+    """
+    cookies_base64 = os.getenv('YOUTUBE_COOKIES_BASE64')
+
+    if cookies_base64:
+        try:
+            # המרה מbase64 לטקסט רגיל
+            cookies_content = base64.b64decode(cookies_base64).decode('utf-8')
+
+            # יצירת הקובץ בנתיב הנכון
+            with open(COOKIES_FILE, 'w') as f:
+                f.write(cookies_content)
+
+            logger.info("YouTube Cookies נוצרו מהמשתנה סביבה (נדרש ל-Render)")
+            return True
+
+        except Exception as e:
+            logger.error(f"שגיאה ביצירת cookies: {e}")
+            logger.warning("ממשיך בלי cookies - YouTube עלול לא לעבוד")
+            return False
+    else:
+        # אין משתנה סביבה - זה OK! (מצב לוקאלי)
+        logger.info("אין משתנה YOUTUBE_COOKIES_BASE64 - רץ במצב רגיל")
+        return False
+
+
+# הפעלת setup של cookies
+setup_cookies()
 
 
 def create_bot() -> telebot.TeleBot:
